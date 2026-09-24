@@ -49,9 +49,9 @@ Host integration checks also matter: a correct solver is only useful if the host
 
 **Active development — September 2026.** The fluid engine and Houdini integration originated in the Halation project; their standalone extraction and release preparation are in progress.
 
-The integration has documented development testing on Windows 11 with Houdini 22.0.368 Apprentice and an NVIDIA GPU using Vulkan. That describes the original integration's tested environment, not a general compatibility guarantee or a completed standalone release qualification.
+The integration has documented development testing on Windows 11 with Houdini 22.0.368 Apprentice and an NVIDIA GPU using Vulkan. That describes the original integration's tested environment, not a general compatibility guarantee.
 
-Standalone build and CPU checks have been recorded. Clean-install validation, standalone GPU and Houdini acceptance, and release packaging remain work in progress. No public binaries or installable Houdini package are offered here yet.
+A 0.1.0 release candidate has been built and validated privately: standalone build and CPU checks, GPU liquid acceptance, real-Houdini host acceptance, and a clean install from the versioned package. No public binaries or installable Houdini package are offered here yet.
 
 **Stack:** Rust · wgpu · WGSL · Python · Houdini · OpenVDB
 
