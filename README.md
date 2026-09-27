@@ -1,62 +1,51 @@
 # Halation Fluid
 
-**A native GPU fluid engine, with liquid simulation inside Houdini.**
+**GPU liquid and smoke simulation, built in Rust with wgpu.**
 
-Halation Fluid is a fluid simulation project built in Rust with wgpu and WGSL. It combines particle-and-grid liquid simulation, surface reconstruction, and a Houdini integration that brings the engine into an artist's existing geometry and animation workflow.
+![Water sloshing inside a moving closed container](media/development/container-motion.gif)
 
-The engine grew out of [Halation](https://github.com/nat-bishop/halation), an agent-native procedural 3D application. It is now being prepared as a standalone engine and Houdini addon, with liquid simulation as the initial product focus. The broader engine also includes Eulerian smoke and fire, OpenVDB output, and particle and whitewater machinery.
+*Moving boundaries: a prescribed drop and rotation drive the container while the liquid responds. The solid walls are hidden to reveal the surface.*
 
-> **Project showcase.** This repository describes the project and its engineering. The implementation is private; this is not a source release or an installable distribution.
+I built Halation's fluid engine from GPU simulation kernels through reusable caches and a Houdini integration. It combines **FLIP/APIC liquids** with **Eulerian smoke and fire**, with numerical tests and visual comparisons guiding development. It grew out of [Halation](https://github.com/nat-bishop/halation), my procedural 3D application. The implementation remains private.
 
-## Liquid simulation
+![A moving source deposits an amber viscous ribbon](media/development/viscous-ribbon.gif)
 
-The liquid solver combines particles with a staggered velocity grid. FLIP and APIC transfer modes support different motion characteristics, from splashy flows to smoother swirling motion.
+*Viscous pouring: an animated source lays down a thick ribbon. The circular pattern follows the source motion.*
 
-- **Physical controls:** gravity, viscosity, and surface tension expressed in physical units.
-- **Animated interaction:** liquid sources and colliders driven by host geometry, including translation, rotation, and supported deformation.
-- **Dense and narrow-band simulation:** alternative storage modes, with narrow-band particles concentrated near the liquid surface.
-- **GPU numerical work:** pressure and density projection, adaptive substeps, and surface reconstruction.
-- **Reusable simulation state:** persistent sessions, checkpoints, and cached frame outputs support playback, continuation, and edits.
+Both studies use a 64³ liquid grid and four seconds of simulated motion, rendered in Cycles from Halation's native caches.
 
-The engine produces particles, reconstructed surfaces, and field observations that a host can use for visualization, surfacing, or downstream processing.
+## Building the engine
 
-## Working in Houdini
+The liquid solver couples particles to a staggered velocity grid, with pressure and density projection, adaptive substeps, viscosity, surface tension and surface reconstruction. Dense and narrow-band storage support different workloads; the gas solver uses sparse GPU storage and exports OpenVDB volumes.
 
-The Houdini integration is a SOP asset with three geometry inputs: **initial liquid**, **liquid source**, and **collider**. Artists supply ordinary SOP geometry and animate it through their existing networks.
+The engineering extends beyond a single solve. A shared native session handles batch and persistent execution, committed frame outputs, checkpoint recovery and cache reuse after edits. Hosts evaluate geometry, animation and units; the engine owns simulation state. That boundary lets the same liquid engine serve Halation and Houdini.
 
-The asset evaluates those inputs on Houdini's timeline and drives a native solver process. It can return particles, surface and velocity fields, or a native surface mesh. Houdini's Particle Fluid Surface and File Cache nodes can then handle downstream surfacing and caching.
+## Every change had to earn its place
 
-Houdini owns scene evaluation and presentation. The native engine owns simulation state, substeps, checkpoint recovery, and output publication. Keeping those responsibilities separate lets the integration reuse the liquid engine without requiring the Halation application to run.
+- **Benchmark gates.** I tracked compute cost alongside divergence, finite values, bounded mass and deterministic replay. A faster result had to preserve the relevant numerical checks.
+- **Testing the reference itself.** I built a high-accuracy golden solve, then found that comparing against it favored the advection method used to create it. Analytical advection tests and energy spectra replaced that score as acceptance criteria. They confirmed a useful improvement and rejected a noisier alternative that initially looked more detailed.
+- **Blind visual rankings.** I watched real flume footage, then ranked shuffled simulation variants before revealing their settings. These were my own recorded judgments, anchored to real water. The results exposed differences between numerical accuracy and visual preference, including a preference for a softer surface-tension variant in one later comparison.
 
-## How it is built
+### Historical performance snapshot
 
-| Layer | Responsibility |
-|---|---|
-| Host integration | Evaluate geometry and animation, prepare physical inputs, display results |
-| Native liquid session | Own the simulation lifecycle, cache identity, checkpoints, and committed outputs |
-| Rust + wgpu / WGSL | Run the GPU solver and surface reconstruction |
-| Output layer | Expose particles, meshes, and fields for host workflows; OpenVDB for gas volumes |
+Dense smoke benchmark, June 23, 2026, on an **NVIDIA RTX PRO 6000 Blackwell Workstation Edition**. Configuration: `consistent-mg-mac`, four multigrid V-cycles.
 
-Batch simulation and the persistent liquid process share one session implementation. This keeps core simulation behavior in one place while allowing different hosts to control when work happens and how results are presented.
+| Grid | Measured time per simulation step |
+|---|---:|
+| 128³ | 3.12 ms |
+| 256³ | 8.08 ms |
+| 384³ | 30.71 ms |
 
-## Engineering approach
+These are simulation-only measurements, excluding rendering and cache output. They describe this historical dense-gas configuration; liquid and current sparse workloads have different costs.
 
-Development pairs visual inspection with numerical checks: volume behavior, collision response, finite values, solver convergence, and repeatability under controlled configurations. Cache and checkpoint tests examine whether continuing or restoring a simulation preserves the expected result.
+## Inside Houdini
 
-Host integration checks also matter: a correct solver is only useful if the host supplies geometry, motion, units, and frame timing correctly. Houdini testing therefore covers input conversion, moving geometry, output placement, playback, and downstream surfacing.
+The liquid engine also runs behind a Houdini SOP asset with three inputs: **initial liquid, liquid source and collider**. Ordinary SOP geometry and animation drive the simulation. The node returns particles, fields or a native surface mesh, with Houdini's Particle Fluid Surface and File Cache available downstream.
 
-## Current status
+Houdini owns scene evaluation and presentation; a persistent native process owns the solve and its cache. The integration has been tested in **Houdini 22.0.368 Apprentice on Windows 11**, using NVIDIA hardware and Vulkan.
 
-**Active development — September 2026.** The fluid engine and Houdini integration originated in the Halation project; their standalone extraction and release preparation are in progress.
+**Stack:** Rust · wgpu · WGSL · Python · Houdini · OpenVDB · Cycles
 
-The integration has documented development testing on Windows 11 with Houdini 22.0.368 Apprentice and an NVIDIA GPU using Vulkan. That describes the original integration's tested environment, not a general compatibility guarantee.
+Built by [Nat Bishop](https://github.com/nat-bishop). Project showcase; source and installable packages remain private.
 
-A 0.1.0 release candidate has been built and validated privately: standalone build and CPU checks, GPU liquid acceptance, real-Houdini host acceptance, and a clean install from the versioned package. No public binaries or installable Houdini package are offered here yet.
-
-**Stack:** Rust · wgpu · WGSL · Python · Houdini · OpenVDB
-
-Built by [Nat Bishop](https://github.com/nat-bishop). See the [Halation showcase](https://github.com/nat-bishop/halation) for the larger procedural 3D project.
-
-## Rights
-
-© 2026 Nat Bishop. All rights reserved. This page is published for portfolio and evaluation purposes. The engine and addon source remain private.
+© 2026 Nat Bishop. All rights reserved.
