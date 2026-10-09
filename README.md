@@ -6,9 +6,9 @@ I built Halation Fluid from simulation kernels through reusable caches and a Hou
 
 Built by [Nat Bishop](https://github.com/nat-bishop), as part of [Halation](https://github.com/nat-bishop/halation). **Project showcase; source and installable packages private.**
 
-![Water sloshing inside a moving closed container](media/development/container-motion.gif)
+![A moving source deposits an amber viscous ribbon](media/development/viscous-ribbon.gif)
 
-*Moving boundaries: a prescribed drop and rotation drive the container while the liquid responds. The solid walls are hidden to reveal the surface.*
+*Viscous pouring: an animated source lays down a thick ribbon. The circular pattern follows the source motion.*
 
 ## What I built
 
@@ -19,9 +19,9 @@ Built by [Nat Bishop](https://github.com/nat-bishop), as part of [Halation](http
 
 ## Liquid studies
 
-![A moving source deposits an amber viscous ribbon](media/development/viscous-ribbon.gif)
+![Water sloshing inside a moving closed container](media/development/container-motion.gif)
 
-*Viscous pouring: an animated source lays down a thick ribbon. The circular pattern follows the source motion.*
+*Moving boundaries: a prescribed drop and rotation drive the container while the liquid responds. The solid walls are hidden to reveal the surface.*
 
 Both studies use a **64³ liquid grid** and four seconds of simulated motion, rendered in Cycles from Halation's native caches. They are development studies of specific behaviors.
 
