@@ -1,29 +1,42 @@
 # Halation Fluid
 
-**GPU liquid, smoke and fire simulation in Rust and wgpu.**
+![Smoke wrapping a sphere, a torch flame and water pouring into a glass, simulated side by side in Halation Fluid](media/halation-fluid-hero.gif)
 
-I built Halation Fluid from simulation kernels through reusable caches and a Houdini integration. It combines **FLIP/APIC liquids** with **Eulerian smoke and fire**, with numerical tests and visual comparisons guiding development.
+*Smoke (384 × 384 × 384 cells), fire (264 × 384 × 264) and FLIP/APIC liquid (192 × 384 × 192, sparse), simulated on the GPU and rendered in Cycles. A four-second excerpt of the clip below.*
+
+**GPU liquid, smoke and fire simulation in Rust and wgpu.** I built Halation Fluid from simulation kernels through resumable caches and a Houdini integration. It combines **FLIP/APIC liquids** with **sparse Eulerian smoke and fire**, and every change to a solver had to pass numerical tests and visual comparisons before it was kept.
 
 Built by [Nat Bishop](https://github.com/nat-bishop), as part of [Halation](https://github.com/nat-bishop/halation). **Project showcase; source and installable packages private.**
 
-![A moving source deposits an amber viscous ribbon](media/development/viscous-ribbon.gif)
+## What it shows
 
-*Viscous pouring: an animated source lays down a thick ribbon. The circular pattern follows the source motion.*
+- **Three solvers on one engine.** FLIP/APIC liquid, and sparse GPU smoke and fire, simulated natively and rendered in Cycles.
+- **Production-shaped outputs.** Surface meshes, particles and fields for liquids; OpenVDB volumes for gas; caches that survive edits and resume.
+- **Measured, not eyeballed.** Benchmark gates on divergence, mass and deterministic replay, an audited reference solve, and blind visual rankings.
+- **Runs inside Houdini.** A SOP asset drives the native liquid engine from ordinary Houdini geometry.
+
+## Smoke, fire and liquid
+
+<!-- VIDEO PLACEHOLDER: in GitHub's web editor, drag halation-fluid-showcase.mp4 onto this line.
+     GitHub uploads it to user-attachments and replaces this comment with a link that plays inline.
+     A committed .mp4 file does not play. Delete this comment once the video is in. -->
+
+*20 seconds, captioned. Each panel is one simulation played at normal speed and rendered in Cycles. The spheres, nozzle, brazier and glass are static set pieces and colliders. The flame's colour comes from Halation's fire colour ramp, and the warm light on the brazier comes from two static lights.*
 
 ## What I built
 
-- **GPU solvers:** particle/grid liquid simulation, pressure and density projection, adaptive substeps, viscosity, surface tension, and an Eulerian gas solver.
+- **GPU solvers:** particle/grid liquid simulation, pressure and density projection, adaptive substeps, viscosity, surface tension, and a sparse Eulerian gas solver for smoke and fire.
 - **A usable simulation lifecycle:** persistent sessions, committed frame outputs, checkpoint recovery and cache reuse after edits.
 - **Outputs for artists:** surface reconstruction, liquid particles and fields, OpenVDB gas volumes, and Cycles rendering from native caches.
 - **Host integration:** geometry and animation inputs from Halation and a Houdini liquid SOP, with simulation state owned by the native engine.
 
 ## Liquid studies
 
-![Water sloshing inside a moving closed container](media/development/container-motion.gif)
+| Viscous pouring | Moving boundaries |
+|---|---|
+| ![A moving source deposits an amber viscous ribbon](media/development/viscous-ribbon.gif) | ![Water sloshing inside a moving closed container](media/development/container-motion.gif) |
 
-*Moving boundaries: a prescribed drop and rotation drive the container while the liquid responds. The solid walls are hidden to reveal the surface.*
-
-Both studies use a **64³ liquid grid** and four seconds of simulated motion, rendered in Cycles from Halation's native caches. They are development studies of specific behaviors.
+*Development studies of specific behaviors on a 64³ liquid grid, four seconds of simulated motion each, rendered in Cycles from Halation's native caches. Left: an animated source lays down a thick ribbon. Right: a prescribed drop and rotation drive a closed container; its walls are hidden to reveal the surface.*
 
 ## Engineering the engine
 
