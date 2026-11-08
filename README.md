@@ -17,9 +17,7 @@ Built by [Nat Bishop](https://github.com/nat-bishop), as part of [Halation](http
 
 ## Smoke, fire and liquid
 
-<!-- VIDEO PLACEHOLDER: in GitHub's web editor, drag halation-fluid-showcase.mp4 onto this line.
-     GitHub uploads it to user-attachments and replaces this comment with a link that plays inline.
-     A committed .mp4 file does not play. Delete this comment once the video is in. -->
+https://github.com/user-attachments/assets/316e98b3-ae41-4996-bd8c-ff204a03975b
 
 *20 seconds, captioned. Each panel is one simulation played at normal speed and rendered in Cycles. The spheres, nozzle, brazier and glass are static set pieces and colliders. The flame's colour comes from Halation's fire colour ramp, and the warm light on the brazier comes from two static lights.*
 
